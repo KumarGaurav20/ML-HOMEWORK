@@ -1,0 +1,371 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "03 Linear Regression.ipynb",
+      "provenance": [],
+      "authorship_tag": "ABX9TyMtqXeTI/pktX2tdXY/AhWV",
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/KumarGaurav20/ML-HOMEWORK/blob/main/03_ML_TUT1\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "gdVqIhcLM6Vr"
+      },
+      "source": [
+        "# Machine Learning Tutorial 01\n",
+        "The following table shows the results of a recently conducted study on the correlation of the number of hours spent driving with the risk of developing acute backache. Find the equation of the best fit line for this data."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "GPLEPXvJNFvV"
+      },
+      "source": [
+        "## Instructions:\n",
+        "\n",
+        "\n",
+        "\n",
+        "1. Find independent variable and dependent variable in given dataset.\n",
+        "2. Implement linear regression in Colab.\n",
+        "3. Find regression line that best predicts value of dependent variable.\n",
+        "4. Find SST, SSE, SSR and co-efficient of determination (R2).\n",
+        "5. Explain pictorial relationship between SST, SSE, SSR.\n",
+        "6. Decide whether regression equation is good fit or not for the given sample data"
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "P09cXflScZfQ"
+      },
+      "source": [
+        "NOTEBOOK IMPORTS"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/"
+        },
+        "id": "vusp-uixNhih",
+        "outputId": "aae6a43b-91e8-4060-e9da-7778b8a98a3a"
+      },
+      "source": [
+        "from google.colab import drive\n",
+        "drive.mount('/content/gdrive')\n",
+        "\n",
+        "import pandas as pd\n",
+        "from pandas import DataFrame\n",
+        "import numpy as np\n",
+        "\n",
+        "import matplotlib.pyplot as plt\n",
+        "\n",
+        "from sklearn.linear_model import LinearRegression\n",
+        "from sklearn.model_selection import train_test_split\n",
+        "from sklearn import metrics\n",
+        "\n",
+        "%matplotlib inline"
+      ],
+      "execution_count": 7,
+      "outputs": [
+        {
+          "output_type": "stream",
+          "name": "stdout",
+          "text": [
+            "Mounted at /content/gdrive\n"
+          ]
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "uzcZZOl7ghxP"
+      },
+      "source": [
+        "Constants"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "cKbOgRiagjOe"
+      },
+      "source": [
+        "X_= 'No of hours driving'\n",
+        "y_= 'Risk Score on a Scale of 0-100'"
+      ],
+      "execution_count": 12,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "R7s3kadhf2Ez"
+      },
+      "source": [
+        "1.READING DATA"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 297
+        },
+        "id": "iiW9pllNdflF",
+        "outputId": "a8147d82-93ae-416c-96ef-9926db01bc57"
+      },
+      "source": [
+        "data = pd.read_csv('/content/ML_TUT1.csv')\n",
+        "data"
+      ],
+      "execution_count": 10,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>X</th>\n",
+              "      <th>y</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>0</th>\n",
+              "      <td>10</td>\n",
+              "      <td>95</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>1</th>\n",
+              "      <td>9</td>\n",
+              "      <td>80</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>2</th>\n",
+              "      <td>2</td>\n",
+              "      <td>10</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>3</th>\n",
+              "      <td>15</td>\n",
+              "      <td>50</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>4</th>\n",
+              "      <td>10</td>\n",
+              "      <td>45</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>5</th>\n",
+              "      <td>16</td>\n",
+              "      <td>98</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>6</th>\n",
+              "      <td>11</td>\n",
+              "      <td>38</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>7</th>\n",
+              "      <td>16</td>\n",
+              "      <td>93</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "    X   y\n",
+              "0  10  95\n",
+              "1   9  80\n",
+              "2   2  10\n",
+              "3  15  50\n",
+              "4  10  45\n",
+              "5  16  98\n",
+              "6  11  38\n",
+              "7  16  93"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 10
+        }
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "colab": {
+          "base_uri": "https://localhost:8080/",
+          "height": 297
+        },
+        "id": "oYimUqqmeH-w",
+        "outputId": "9c48bedc-4a8c-4763-9c16-b6e4c253b03f"
+      },
+      "source": [
+        "data.describe()"
+      ],
+      "execution_count": 11,
+      "outputs": [
+        {
+          "output_type": "execute_result",
+          "data": {
+            "text/html": [
+              "<div>\n",
+              "<style scoped>\n",
+              "    .dataframe tbody tr th:only-of-type {\n",
+              "        vertical-align: middle;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe tbody tr th {\n",
+              "        vertical-align: top;\n",
+              "    }\n",
+              "\n",
+              "    .dataframe thead th {\n",
+              "        text-align: right;\n",
+              "    }\n",
+              "</style>\n",
+              "<table border=\"1\" class=\"dataframe\">\n",
+              "  <thead>\n",
+              "    <tr style=\"text-align: right;\">\n",
+              "      <th></th>\n",
+              "      <th>X</th>\n",
+              "      <th>y</th>\n",
+              "    </tr>\n",
+              "  </thead>\n",
+              "  <tbody>\n",
+              "    <tr>\n",
+              "      <th>count</th>\n",
+              "      <td>8.000000</td>\n",
+              "      <td>8.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>mean</th>\n",
+              "      <td>11.125000</td>\n",
+              "      <td>63.625000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>std</th>\n",
+              "      <td>4.673252</td>\n",
+              "      <td>32.429869</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>min</th>\n",
+              "      <td>2.000000</td>\n",
+              "      <td>10.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>25%</th>\n",
+              "      <td>9.750000</td>\n",
+              "      <td>43.250000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>50%</th>\n",
+              "      <td>10.500000</td>\n",
+              "      <td>65.000000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>75%</th>\n",
+              "      <td>15.250000</td>\n",
+              "      <td>93.500000</td>\n",
+              "    </tr>\n",
+              "    <tr>\n",
+              "      <th>max</th>\n",
+              "      <td>16.000000</td>\n",
+              "      <td>98.000000</td>\n",
+              "    </tr>\n",
+              "  </tbody>\n",
+              "</table>\n",
+              "</div>"
+            ],
+            "text/plain": [
+              "               X          y\n",
+              "count   8.000000   8.000000\n",
+              "mean   11.125000  63.625000\n",
+              "std     4.673252  32.429869\n",
+              "min     2.000000  10.000000\n",
+              "25%     9.750000  43.250000\n",
+              "50%    10.500000  65.000000\n",
+              "75%    15.250000  93.500000\n",
+              "max    16.000000  98.000000"
+            ]
+          },
+          "metadata": {},
+          "execution_count": 11
+        }
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "5Za7XgbtgGAC"
+      },
+      "source": [
+        "Determining which one is the dependent variable\n",
+        "From the above dataset it is very well evident that 'y' is the dependent variable, since it is a score of how severe the pain can turn out to be after driving 'x' number of hours, therefore, it is safe to say that 'y' is dependent on 'x' and exhibits a linear relationship."
+      ]
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "3xpxMmH4hJMO"
+      },
+      "source": [
+        "2- Implementing Linear Relation"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "u1MAENRdf6Yo"
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
